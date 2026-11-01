@@ -1,0 +1,949 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Trench Bound: No Man's Land – Prototype v0.2</title>
+<style>
+:root{
+  --bg:#0f0f0d;
+  --panel:#1c1c17;
+  --line:#5e513c;
+  --paper:#e4d3ad;
+  --gold:#d6aa5e;
+  --red:#9e3d33;
+  --green:#5b684b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0b0b0a;color:#eee;font-family:monospace;overflow:hidden}
+body{display:flex;align-items:center;justify-content:center}
+#app{
+  width:min(1180px,100vw);
+  height:min(820px,100vh);
+  display:flex;
+  flex-direction:column;
+  background:#151510;
+  border:2px solid #4b4233;
+}
+#topbar{
+  flex:0 0 auto;
+  min-height:54px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:8px 12px;
+  background:#1e1e18;
+  border-bottom:2px solid var(--line);
+}
+#brand{
+  color:#e6d49f;
+  font-weight:900;
+  letter-spacing:.08em;
+  font-size:14px;
+  white-space:nowrap;
+}
+#hud{
+  display:flex;
+  gap:18px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  font-size:13px;
+  font-weight:900;
+}
+.hudItem b{color:#f0d582}
+#gameWrap{
+  position:relative;
+  flex:1 1 auto;
+  min-height:0;
+  background:#777262;
+}
+canvas{
+  display:block;
+  width:100%;
+  height:100%;
+  image-rendering:pixelated;
+  background:#8f8977;
+  cursor:none;
+  outline:none;
+}
+#overlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(8,8,7,.78);
+  z-index:10;
+  padding:24px;
+}
+.card{
+  width:min(760px,92%);
+  background:#1d1b17;
+  border:3px solid #8a744f;
+  box-shadow:0 18px 60px rgba(0,0,0,.6);
+  padding:26px 28px;
+  text-align:center;
+}
+.card h1{
+  margin:0 0 8px;
+  font-family:Georgia,serif;
+  font-size:36px;
+  color:#f0d9a2;
+}
+.card p{color:#d8cfbd;line-height:1.5;margin:10px 0}
+.bigStart{
+  margin-top:16px;
+  padding:13px 22px;
+  border:2px solid #d5b16d;
+  background:#b98c4a;
+  color:#20180f;
+  font:900 15px monospace;
+  cursor:pointer;
+  box-shadow:0 3px 0 #5b482c;
+}
+.bigStart:active{transform:translateY(2px);box-shadow:0 1px 0 #5b482c}
+.keys{
+  margin:18px auto 8px;
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:10px 16px;
+  max-width:680px;
+}
+.keyHelp{display:flex;align-items:center;gap:6px;color:#d7c8aa;font-weight:800}
+.key{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:32px;
+  height:30px;
+  padding:0 8px;
+  border:2px solid #a89167;
+  border-bottom-width:4px;
+  border-radius:3px;
+  background:#342f26;
+  color:#f5e6be;
+  font-weight:900;
+}
+.small{font-size:11px;color:#9f9584}
+#status{
+  position:absolute;
+  left:50%;
+  top:16px;
+  transform:translateX(-50%);
+  z-index:5;
+  padding:8px 12px;
+  background:rgba(20,18,15,.9);
+  border:2px solid #7d694b;
+  color:#f1dfad;
+  font-weight:900;
+  letter-spacing:.05em;
+  display:none;
+  pointer-events:none;
+}
+#stageBanner{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  z-index:6;
+  min-width:320px;
+  text-align:center;
+  background:rgba(19,17,14,.92);
+  border:3px solid #8d734b;
+  padding:18px 24px;
+  color:#efd9a6;
+  font-weight:900;
+  font-size:24px;
+  letter-spacing:.08em;
+  display:none;
+  pointer-events:none;
+}
+#hitFlash{
+  position:absolute;
+  inset:0;
+  z-index:4;
+  pointer-events:none;
+  background:rgba(160,35,28,0);
+}
+#reloadBar{
+  position:absolute;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  width:min(320px,60%);
+  height:24px;
+  border:2px solid #bda579;
+  background:#2b2923;
+  display:none;
+  z-index:5;
+}
+#reloadFill{height:100%;width:0;background:#71815f}
+#reloadText{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#f2e3bf;
+  font-weight:900;
+  font-size:12px;
+}
+#footer{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  min-height:38px;
+  padding:6px 10px;
+  background:#171713;
+  border-top:2px solid #4a4032;
+  color:#9e9584;
+  font-size:11px;
+}
+#footer b{color:#d4c49f}
+@media(max-width:820px){
+  #brand{font-size:11px}
+  #hud{font-size:11px;gap:10px}
+  .card h1{font-size:28px}
+  .card{padding:20px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <div id="brand">TRENCH BOUND: NO MAN'S LAND · PROTOTYPE v0.2</div>
+    <div id="hud">
+      <span class="hudItem">SCORE <b id="score">000000</b></span>
+      <span class="hudItem">LIV <b id="lives">♥♥♥</b></span>
+      <span class="hudItem">AMMO <b id="ammo">●●●●●●</b></span>
+      <span class="hudItem">STAGE <b id="stage">1</b></span>
+      <span class="hudItem">BEST <b id="best">000000</b></span>
+    </div>
+  </div>
+
+  <div id="gameWrap">
+    <canvas id="game" width="1024" height="640" tabindex="0" aria-label="No Man's Land-spillet"></canvas>
+    <div id="status"></div>
+    <div id="stageBanner"></div>
+    <div id="hitFlash"></div>
+
+    <div id="reloadBar">
+      <div id="reloadFill"></div>
+      <div id="reloadText">LADER …</div>
+    </div>
+
+    <div id="overlay">
+      <div class="card" id="overlayCard">
+        <h1>NO MAN'S LAND</h1>
+        <p>Hold stillingen. Treff soldatene som dukker opp før de rekker å skyte på deg.</p>
+        <p><b>6 skudd · 3 liv · stadig vanskeligere brett</b></p>
+
+        <div class="keys">
+          <div class="keyHelp"><span class="key">WASD</span><span>/</span><span class="key">←↑↓→</span><span>SIKT</span></div>
+          <div class="keyHelp"><span class="key">SPACE</span><span>SKYT</span></div>
+          <div class="keyHelp"><span class="key">R</span><span>RELOAD</span></div>
+          <div class="keyHelp"><span class="key">ENTER</span><span>START</span></div>
+        </div>
+
+        <p class="small">Når en fiende gjør seg klar til å skyte, får du et tydelig varsel. Ingen blod eller grov vold.</p>
+        <button id="startBtn" class="bigStart" type="button">START PROTOTYPEN</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer">
+    <span><b>Space</b> skyt</span>
+    <span><b>R</b> reload</span>
+    <span><b>WASD / piler</b> sikt</span>
+    <span>Optimalisert for <b>iPad + fysisk tastatur</b></span>
+  </div>
+</div>
+
+<script>
+(()=>{
+"use strict";
+
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+ctx.imageSmoothingEnabled=false;
+
+const scoreEl=document.getElementById("score");
+const livesEl=document.getElementById("lives");
+const ammoEl=document.getElementById("ammo");
+const stageEl=document.getElementById("stage");
+const bestEl=document.getElementById("best");
+const overlay=document.getElementById("overlay");
+const overlayCard=document.getElementById("overlayCard");
+const statusEl=document.getElementById("status");
+const stageBanner=document.getElementById("stageBanner");
+const hitFlash=document.getElementById("hitFlash");
+const reloadBar=document.getElementById("reloadBar");
+const reloadFill=document.getElementById("reloadFill");
+
+const MAX_AMMO=6;
+const START_LIVES=3;
+const RELOAD_MS=1350;
+const BEST_KEY="trenchBound_noMansLand_best_v2";
+
+let best=0;
+let canSave=true;
+try{
+  const t="__tb_nml_v2__";
+  localStorage.setItem(t,"1");
+  localStorage.removeItem(t);
+  best=Math.max(0,Number(localStorage.getItem(BEST_KEY))||0);
+}catch(err){
+  canSave=false;
+  best=0;
+}
+
+const G={
+  running:false,
+  gameOver:false,
+  score:0,
+  lives:START_LIVES,
+  ammo:MAX_AMMO,
+  reloading:false,
+  reloadStart:0,
+  reloadEnd:0,
+  stage:1,
+  hitsThisStage:0,
+  stageTarget:8,
+  crossX:512,
+  crossY:330,
+  keys:Object.create(null),
+  enemies:[],
+  effects:[],
+  lastSpawn:0,
+  lastShot:0,
+  lastFrame:0,
+  stagePauseUntil:0,
+  invulnerableUntil:0
+};
+
+const SPOTS=[
+  {x:115,y:325,s:.95},{x:225,y:285,s:.88},{x:340,y:345,s:1.02},
+  {x:455,y:270,s:.90},{x:570,y:330,s:1.00},{x:690,y:280,s:.90},
+  {x:810,y:340,s:1.02},{x:905,y:300,s:.94},
+  {x:170,y:435,s:1.10},{x:370,y:455,s:1.08},{x:590,y:445,s:1.12},{x:805,y:440,s:1.08}
+];
+
+function pad(n){return String(Math.max(0,Math.floor(n))).padStart(6,"0")}
+
+function updateHud(){
+  scoreEl.textContent=pad(G.score);
+  livesEl.textContent="♥".repeat(G.lives)+"♡".repeat(START_LIVES-G.lives);
+  ammoEl.textContent="●".repeat(G.ammo)+"○".repeat(MAX_AMMO-G.ammo);
+  stageEl.textContent=String(G.stage);
+  bestEl.textContent=pad(best);
+}
+
+function setStatus(text,ms=900){
+  statusEl.textContent=text;
+  statusEl.style.display="block";
+  clearTimeout(setStatus._t);
+  setStatus._t=setTimeout(()=>{statusEl.style.display="none"},ms);
+}
+
+function showStageBanner(text,ms=1000){
+  stageBanner.textContent=text;
+  stageBanner.style.display="block";
+  clearTimeout(showStageBanner._t);
+  showStageBanner._t=setTimeout(()=>{stageBanner.style.display="none"},ms);
+}
+
+function cfg(){
+  const s=G.stage;
+  return {
+    spawn:Math.max(360,1120-s*82),
+    rise:Math.max(180,470-s*18),
+    aim:Math.max(380,1180-s*74),
+    hide:Math.max(270,430-s*8),
+    max:Math.min(5,1+Math.floor((s-1)/2)),
+    moveChance:Math.min(.45,(s-1)*.035)
+  };
+}
+
+function resetGame(){
+  G.running=true;
+  G.gameOver=false;
+  G.score=0;
+  G.lives=START_LIVES;
+  G.ammo=MAX_AMMO;
+  G.reloading=false;
+  G.reloadStart=0;
+  G.reloadEnd=0;
+  G.stage=1;
+  G.hitsThisStage=0;
+  G.crossX=512;
+  G.crossY=330;
+  G.enemies=[];
+  G.effects=[];
+  G.lastSpawn=0;
+  G.lastShot=0;
+  G.lastFrame=performance.now();
+  G.stagePauseUntil=performance.now()+700;
+  G.invulnerableUntil=0;
+  reloadBar.style.display="none";
+  overlay.style.display="none";
+  updateHud();
+  showStageBanner("STAGE 1",900);
+  canvas.focus();
+  requestAnimationFrame(loop);
+}
+
+function spawnEnemy(now){
+  if(!G.running || now<G.stagePauseUntil)return;
+  const c=cfg();
+  if(G.enemies.length>=c.max || now-G.lastSpawn<c.spawn)return;
+
+  const free=SPOTS.filter(spot=>!G.enemies.some(e=>!e.dead && Math.hypot(e.x-spot.x,e.y-spot.y)<78));
+  if(!free.length)return;
+
+  G.lastSpawn=now;
+  const spot=free[Math.floor(Math.random()*free.length)];
+  G.enemies.push({
+    x:spot.x,
+    y:spot.y,
+    s:spot.s,
+    state:"rise",
+    stateAt:now,
+    dead:false,
+    deadAt:0,
+    shot:false,
+    bob:Math.random()*Math.PI*2,
+    drift:(Math.random()-.5)*18
+  });
+}
+
+function startReload(now=performance.now()){
+  if(!G.running || G.reloading || G.ammo===MAX_AMMO)return;
+  G.reloading=true;
+  G.reloadStart=now;
+  G.reloadEnd=now+RELOAD_MS;
+  reloadBar.style.display="block";
+  reloadFill.style.width="0%";
+  setStatus("LADER …",700);
+}
+
+function finishReload(){
+  G.reloading=false;
+  G.ammo=MAX_AMMO;
+  reloadBar.style.display="none";
+  reloadFill.style.width="0%";
+  setStatus("KLAR!",500);
+  updateHud();
+}
+
+function enemyHitbox(e,now){
+  const c=cfg();
+  let vis=1;
+  if(e.state==="rise"){
+    vis=Math.min(1,(now-e.stateAt)/c.rise);
+  }else if(e.state==="hide"){
+    vis=Math.max(0,1-(now-e.stateAt)/c.hide);
+  }
+  const base=e.y+(1-vis)*74;
+  const w=38*e.s;
+  const h=74*e.s;
+  return {left:e.x-w*.5,right:e.x+w*.5,top:base-h,bottom:base+4,base,vis};
+}
+
+function fireShot(now=performance.now()){
+  if(!G.running || G.reloading || now<G.stagePauseUntil)return;
+  if(now-G.lastShot<180)return;
+  G.lastShot=now;
+
+  if(G.ammo<=0){
+    setStatus("TOMT! TRYKK R",900);
+    return;
+  }
+
+  G.ammo--;
+
+  let target=null;
+  let bestDist=Infinity;
+  for(const e of G.enemies){
+    if(e.dead || e.state==="hide")continue;
+    const b=enemyHitbox(e,now);
+    if(G.crossX>=b.left && G.crossX<=b.right && G.crossY>=b.top && G.crossY<=b.bottom){
+      const d=Math.hypot(G.crossX-e.x,G.crossY-(b.top+(b.bottom-b.top)*.45));
+      if(d<bestDist){bestDist=d;target=e}
+    }
+  }
+
+  G.effects.push({type:"muzzle",x:G.crossX,y:G.crossY,t:0});
+
+  if(target){
+    target.dead=true;
+    target.deadAt=now;
+    target.state="hit";
+    G.score+=100+G.stage*15;
+    G.hitsThisStage++;
+    G.effects.push({type:"hit",x:target.x,y:target.y-45,t:0});
+
+    if(G.hitsThisStage>=G.stageTarget){
+      G.stage++;
+      G.hitsThisStage=0;
+      G.stagePauseUntil=now+1100;
+      G.enemies=[];
+      showStageBanner("STAGE "+G.stage,1000);
+    }
+  }else{
+    G.score=Math.max(0,G.score-5);
+  }
+
+  if(G.ammo===0)setStatus("TOMT! TRYKK R",1100);
+  updateHud();
+}
+
+function enemyShoots(e,now){
+  if(e.shot || e.dead)return;
+  e.shot=true;
+  G.effects.push({type:"enemyShot",x:e.x,y:e.y-55,t:0});
+
+  if(now<G.invulnerableUntil){
+    e.state="hide";
+    e.stateAt=now;
+    return;
+  }
+
+  G.lives--;
+  G.invulnerableUntil=now+700;
+  hitFlash.style.background="rgba(165,42,31,.34)";
+  setTimeout(()=>{hitFlash.style.background="rgba(165,42,31,0)"},120);
+  setStatus("TRUFFET!",650);
+  updateHud();
+
+  if(G.lives<=0){
+    endGame();
+  }else{
+    e.state="hide";
+    e.stateAt=now;
+  }
+}
+
+function endGame(){
+  G.running=false;
+  G.gameOver=true;
+  reloadBar.style.display="none";
+
+  if(G.score>best){
+    best=G.score;
+    if(canSave){
+      try{localStorage.setItem(BEST_KEY,String(best))}
+      catch(err){canSave=false}
+    }
+  }
+  updateHud();
+
+  overlayCard.innerHTML=`
+    <h1>GAME OVER</h1>
+    <p>Score: <b>${pad(G.score)}</b></p>
+    <p>Du kom til <b>stage ${G.stage}</b>.</p>
+    <p>Beste score: <b>${pad(best)}</b></p>
+    <div class="keys">
+      <div class="keyHelp"><span class="key">ENTER</span><span>SPILL IGJEN</span></div>
+    </div>
+    <button id="againBtn" class="bigStart" type="button">SPILL IGJEN</button>
+    <p class="small">Prototype v0.2 · laget for iPad + fysisk tastatur</p>
+  `;
+  overlay.style.display="flex";
+  const again=document.getElementById("againBtn");
+  again.addEventListener("click",resetGame);
+}
+
+function update(now,dt){
+  if(G.reloading){
+    const p=Math.max(0,Math.min(1,(now-G.reloadStart)/RELOAD_MS));
+    reloadFill.style.width=(p*100).toFixed(1)+"%";
+    if(now>=G.reloadEnd)finishReload();
+  }
+
+  const speed=330*dt;
+  if(G.keys.ArrowLeft||G.keys.a)G.crossX-=speed;
+  if(G.keys.ArrowRight||G.keys.d)G.crossX+=speed;
+  if(G.keys.ArrowUp||G.keys.w)G.crossY-=speed;
+  if(G.keys.ArrowDown||G.keys.s)G.crossY+=speed;
+
+  G.crossX=Math.max(20,Math.min(1004,G.crossX));
+  G.crossY=Math.max(86,Math.min(610,G.crossY));
+
+  spawnEnemy(now);
+  const c=cfg();
+
+  for(const e of G.enemies){
+    if(e.dead)continue;
+    const age=now-e.stateAt;
+
+    if(e.state==="rise" && age>=c.rise){
+      e.state="watch";
+      e.stateAt=now;
+    }else if(e.state==="watch" && age>=Math.max(130,c.aim*.38)){
+      e.state="aim";
+      e.stateAt=now;
+    }else if(e.state==="aim" && age>=c.aim*.62){
+      enemyShoots(e,now);
+      if(!G.running)return;
+      e.state="hide";
+      e.stateAt=now;
+    }else if(e.state==="hide" && age>=c.hide){
+      e.dead=true;
+      e.deadAt=now;
+    }
+
+    if(!e.dead && Math.random()<c.moveChance*dt){
+      e.x+=e.drift*dt;
+    }
+  }
+
+  G.enemies=G.enemies.filter(e=>!e.dead || now-e.deadAt<600);
+
+  for(const fx of G.effects)fx.t+=dt;
+  G.effects=G.effects.filter(fx=>fx.t<.48);
+}
+
+function drawPixelCloud(x,y,w){
+  ctx.fillStyle="rgba(214,209,190,.52)";
+  ctx.fillRect(x,y,w,16);
+  ctx.fillRect(x+18,y-12,w*.45,12);
+  ctx.fillRect(x+w*.45,y-8,w*.4,10);
+}
+
+function drawBackground(now){
+  const W=canvas.width,H=canvas.height;
+
+  // sky
+  ctx.fillStyle="#9b9684";
+  ctx.fillRect(0,0,W,175);
+  drawPixelCloud(70,70,120);
+  drawPixelCloud(300,48,138);
+  drawPixelCloud(585,80,130);
+  drawPixelCloud(820,55,110);
+
+  // smoke plumes
+  ctx.fillStyle="rgba(75,70,62,.38)";
+  for(const [x,y] of [[170,140],[510,125],[875,150]]){
+    ctx.fillRect(x,y,22,55);
+    ctx.fillRect(x-12,y-20,46,24);
+    ctx.fillRect(x-4,y-40,32,24);
+  }
+
+  // ruined horizon
+  ctx.fillStyle="#625b4d";
+  ctx.fillRect(0,170,W,115);
+  const ruins=[
+    [20,120,82,80],[150,145,68,55],[270,110,95,90],[420,150,70,52],
+    [545,118,105,78],[710,142,74,60],[835,110,120,90]
+  ];
+  for(const [x,y,w,h] of ruins){
+    ctx.fillRect(x,y,w,h);
+    ctx.fillStyle="#4d493e";
+    ctx.fillRect(x+14,y+16,16,22);
+    ctx.fillRect(x+w-28,y+28,14,18);
+    ctx.fillStyle="#625b4d";
+  }
+
+  // no man's land
+  ctx.fillStyle="#796953";
+  ctx.fillRect(0,260,W,380);
+
+  // blasted mud patches
+  ctx.fillStyle="#5b4d3f";
+  const craters=[[105,350,110],[290,315,78],[470,390,132],[690,340,95],[850,405,125],[360,520,150]];
+  for(const [x,y,w] of craters){
+    ctx.beginPath();
+    ctx.ellipse(x,y,w/2,16,0,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  // dead trees
+  ctx.strokeStyle="#3f392f";
+  ctx.lineWidth=6;
+  for(const x of [120,395,735,920]){
+    ctx.beginPath();
+    ctx.moveTo(x,275);ctx.lineTo(x+3,205);
+    ctx.moveTo(x+2,230);ctx.lineTo(x-18,214);
+    ctx.moveTo(x+2,245);ctx.lineTo(x+22,228);
+    ctx.stroke();
+  }
+
+  // wire posts
+  ctx.strokeStyle="#30302d";
+  ctx.lineWidth=3;
+  for(let x=20;x<W;x+=110){
+    ctx.beginPath();
+    ctx.moveTo(x,300);ctx.lineTo(x+24,255);ctx.lineTo(x+48,302);
+    ctx.stroke();
+  }
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  for(let x=0;x<=W;x+=14){
+    const y=285+Math.sin(x*.12)*7;
+    if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // sandbag lips around some spawn points
+  ctx.fillStyle="#8b7553";
+  for(const spot of SPOTS){
+    if(spot.y<380){
+      for(let i=-2;i<=2;i++){
+        ctx.fillRect(spot.x+i*13-7,spot.y-5+(Math.abs(i)%2)*2,14,8);
+      }
+    }
+  }
+
+  // foreground trench
+  ctx.fillStyle="#4d3f32";
+  ctx.fillRect(0,485,W,155);
+  ctx.fillStyle="#6b543d";
+  for(let x=0;x<W;x+=62){
+    ctx.fillRect(x,478,56,24);
+    ctx.strokeStyle="#a48960";
+    ctx.strokeRect(x,478,56,24);
+  }
+  ctx.fillStyle="#302922";
+  ctx.fillRect(0,555,W,85);
+
+  // trench boards
+  ctx.strokeStyle="#6f5a41";
+  ctx.lineWidth=4;
+  for(let x=18;x<W;x+=95){
+    ctx.beginPath();
+    ctx.moveTo(x,562);ctx.lineTo(x+10,630);
+    ctx.stroke();
+  }
+
+  // player rifle silhouette
+  ctx.fillStyle="#3b2b20";
+  ctx.fillRect(700,565,195,17);
+  ctx.fillStyle="#6f5037";
+  ctx.fillRect(730,574,105,28);
+  ctx.fillStyle="#25231f";
+  ctx.fillRect(884,560,112,8);
+  ctx.fillStyle="#544637";
+  ctx.fillRect(674,573,35,8);
+
+  // subtle ground noise pixels
+  ctx.fillStyle="rgba(44,38,31,.22)";
+  const shift=Math.floor(now/250)%8;
+  for(let x=shift;x<W;x+=73){
+    ctx.fillRect(x,(330+(x*17)%190),9,4);
+  }
+}
+
+function drawEnemy(e,now){
+  const c=cfg();
+  let vis=1;
+  if(e.state==="rise")vis=Math.min(1,(now-e.stateAt)/c.rise);
+  if(e.state==="hide")vis=Math.max(0,1-(now-e.stateAt)/c.hide);
+
+  const base=e.y+(1-vis)*76;
+  const s=e.s;
+
+  ctx.save();
+  ctx.translate(Math.round(e.x),Math.round(base));
+  ctx.scale(s,s);
+
+  // shadow
+  ctx.fillStyle="rgba(35,29,23,.35)";
+  ctx.fillRect(-18,0,36,4);
+
+  // legs
+  ctx.fillStyle="#3d4535";
+  ctx.fillRect(-11,-15,8,17);
+  ctx.fillRect(3,-15,8,17);
+
+  // coat
+  ctx.fillStyle="#4f5b41";
+  ctx.fillRect(-14,-47,28,34);
+  ctx.fillStyle="#3c4733";
+  ctx.fillRect(-17,-20,34,10);
+
+  // belt
+  ctx.fillStyle="#5d4932";
+  ctx.fillRect(-14,-27,28,5);
+
+  // head
+  ctx.fillStyle="#b59b78";
+  ctx.fillRect(-8,-65,16,16);
+
+  // helmet
+  ctx.fillStyle="#566148";
+  ctx.fillRect(-12,-70,24,7);
+  ctx.fillRect(-8,-74,16,5);
+
+  // arm + rifle
+  ctx.fillStyle="#4a553d";
+  ctx.fillRect(10,-42,10,8);
+  ctx.fillStyle="#36281e";
+  ctx.fillRect(15,-39,33,5);
+  ctx.fillStyle="#806044";
+  ctx.fillRect(7,-36,27,4);
+
+  // warning state
+  if(e.state==="aim"){
+    const age=now-e.stateAt;
+    const remain=Math.max(0,c.aim*.62-age);
+    const blink=Math.floor(remain/85)%2===0;
+    if(blink){
+      ctx.fillStyle="#f2d06a";
+      ctx.fillRect(-5,-92,10,10);
+      ctx.fillStyle="#6e2e26";
+      ctx.font="bold 12px monospace";
+      ctx.textAlign="center";
+      ctx.fillText("!",0,-83);
+      ctx.textAlign="left";
+    }
+  }
+
+  // hit pose: x-eyes + arms up
+  if(e.state==="hit" || e.dead){
+    ctx.strokeStyle="#251c17";
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(-6,-59);ctx.lineTo(-2,-55);
+    ctx.moveTo(-2,-59);ctx.lineTo(-6,-55);
+    ctx.moveTo(2,-59);ctx.lineTo(6,-55);
+    ctx.moveTo(6,-59);ctx.lineTo(2,-55);
+    ctx.stroke();
+
+    ctx.strokeStyle="#4f5b41";
+    ctx.lineWidth=6;
+    ctx.beginPath();
+    ctx.moveTo(-9,-39);ctx.lineTo(-23,-57);
+    ctx.moveTo(9,-39);ctx.lineTo(23,-57);
+    ctx.stroke();
+
+    ctx.fillStyle="#b59b78";
+    ctx.fillRect(-27,-62,8,10);
+    ctx.fillRect(19,-62,8,10);
+  }
+
+  ctx.restore();
+}
+
+function drawEffects(){
+  for(const fx of G.effects){
+    const a=Math.max(0,1-fx.t/.48);
+
+    if(fx.type==="muzzle"){
+      ctx.strokeStyle=`rgba(245,225,153,${a})`;
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.arc(fx.x,fx.y,8+fx.t*28,0,Math.PI*2);
+      ctx.stroke();
+    }
+
+    if(fx.type==="hit"){
+      ctx.fillStyle=`rgba(239,201,98,${a})`;
+      ctx.font="bold 18px monospace";
+      ctx.textAlign="center";
+      ctx.fillText("HIT!",fx.x,fx.y-fx.t*22);
+      ctx.textAlign="left";
+    }
+
+    if(fx.type==="enemyShot"){
+      ctx.fillStyle=`rgba(255,211,111,${a})`;
+      ctx.beginPath();
+      ctx.arc(fx.x,fx.y,7+fx.t*15,0,Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle=`rgba(255,245,210,${a})`;
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.moveTo(fx.x,fx.y);
+      ctx.lineTo(512,605);
+      ctx.stroke();
+    }
+  }
+}
+
+function drawCrosshair(){
+  const x=Math.round(G.crossX),y=Math.round(G.crossY);
+  ctx.strokeStyle="rgba(255,255,255,.96)";
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.arc(x,y,18,0,Math.PI*2);
+  ctx.moveTo(x-31,y);ctx.lineTo(x-9,y);
+  ctx.moveTo(x+9,y);ctx.lineTo(x+31,y);
+  ctx.moveTo(x,y-31);ctx.lineTo(x,y-9);
+  ctx.moveTo(x,y+9);ctx.lineTo(x,y+31);
+  ctx.stroke();
+  ctx.fillStyle="#fff";
+  ctx.fillRect(x-1,y-1,3,3);
+}
+
+function draw(now){
+  drawBackground(now);
+  for(const e of G.enemies)drawEnemy(e,now);
+  drawEffects();
+  drawCrosshair();
+}
+
+let raf=0;
+function loop(now){
+  if(!G.running)return;
+  const dt=Math.min(.035,Math.max(0,(now-G.lastFrame)/1000));
+  G.lastFrame=now;
+  update(now,dt);
+  if(!G.running)return;
+  draw(now);
+  raf=requestAnimationFrame(loop);
+}
+
+function keyDown(e){
+  const k=e.key.toLowerCase();
+
+  if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"," ","Enter"].includes(e.key)){
+    e.preventDefault();
+  }
+
+  G.keys[e.key]=true;
+  G.keys[k]=true;
+
+  if(!G.running){
+    if((e.key==="Enter"||e.key===" ") && overlay.style.display!=="none"){
+      resetGame();
+    }
+    return;
+  }
+
+  if(e.key===" "){
+    if(!e.repeat)fireShot();
+  }else if(k==="r"){
+    if(!e.repeat)startReload();
+  }
+}
+
+function keyUp(e){
+  G.keys[e.key]=false;
+  G.keys[e.key.toLowerCase()]=false;
+}
+
+window.addEventListener("keydown",keyDown,{passive:false});
+window.addEventListener("keyup",keyUp);
+
+document.getElementById("startBtn").addEventListener("click",resetGame);
+
+// Mouse support for testing on PC. Keyboard remains the primary iPad control.
+canvas.addEventListener("mousemove",e=>{
+  const r=canvas.getBoundingClientRect();
+  G.crossX=(e.clientX-r.left)/r.width*canvas.width;
+  G.crossY=(e.clientY-r.top)/r.height*canvas.height;
+});
+canvas.addEventListener("mousedown",e=>{
+  e.preventDefault();
+  fireShot();
+});
+
+updateHud();
+draw(performance.now());
+})();
+</script>
+</body>
+</html>
